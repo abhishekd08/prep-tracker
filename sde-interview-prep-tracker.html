@@ -1,0 +1,2841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senior SDE Interview Prep Tracker - 7 YOE</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Chivo:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+    --bg-dark: #0a0a0a; --bg-card: #141414; --bg-hover: #1a1a1a; --border: #2a2a2a;
+    --text-primary: #e8e8e8; --text-secondary: #a0a0a0;
+    --accent-orange: #ff6b35; --accent-yellow: #ffa500; --accent-green: #00ff88;
+    --shadow-orange: rgba(255, 107, 53, 0.3); --shadow-glow: rgba(255, 165, 0, 0.15);
+}
+body { font-family: 'Chivo', sans-serif; background: var(--bg-dark); color: var(--text-primary); overflow: hidden; }
+.app-container { display: flex; height: 100vh; }
+.sidebar { width: 280px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5); }
+.sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--bg-card) 0%, #1a1010 100%); }
+.sidebar-header h1 { font-size: 18px; font-weight: 900; background: linear-gradient(135deg, var(--accent-orange), var(--accent-yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+.progress-overview { font-size: 12px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+.nav-section { flex: 1; overflow-y: auto; padding: 12px 0; }
+.nav-item { padding: 12px 20px; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; display: flex; justify-content: space-between; align-items: center; }
+.nav-item:hover { background: var(--bg-hover); border-left-color: var(--accent-orange); }
+.nav-item.active { background: var(--bg-hover); border-left-color: var(--accent-yellow); box-shadow: inset 4px 0 12px var(--shadow-glow); }
+.nav-item-title { font-size: 14px; font-weight: 700; }
+.nav-item-progress { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); }
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+.action-btn { width: 100%; padding: 10px; margin-bottom: 8px; background: var(--bg-hover); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 13px; font-weight: 700; font-family: 'Chivo', sans-serif; }
+.action-btn:hover { background: var(--accent-orange); border-color: var(--accent-orange); box-shadow: 0 4px 16px var(--shadow-orange); }
+.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.content-header { padding: 24px 32px; border-bottom: 1px solid var(--border); background: var(--bg-card); display: flex; justify-content: space-between; align-items: center; }
+.content-title { font-size: 24px; font-weight: 900; }
+.filter-controls { display: flex; gap: 8px; }
+.filter-btn { padding: 8px 16px; background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-secondary); border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 12px; font-weight: 700; }
+.filter-btn.active { background: var(--accent-orange); color: var(--bg-dark); border-color: var(--accent-orange); }
+.content-body { flex: 1; overflow-y: auto; padding: 32px; }
+.topic-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; overflow: hidden; transition: all 0.3s; }
+.topic-card:hover { border-color: var(--accent-orange); box-shadow: 0 4px 24px var(--shadow-orange); }
+.topic-card.hidden { display: none; }
+.topic-header { padding: 20px 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, var(--bg-card) 0%, #0f0f0f 100%); }
+.topic-header:hover { background: var(--bg-hover); }
+.topic-title-section { display: flex; align-items: center; gap: 12px; flex: 1; }
+.expand-icon { color: var(--accent-orange); transition: transform 0.3s; font-size: 18px; }
+.expand-icon.expanded { transform: rotate(90deg); }
+.topic-title { font-size: 16px; font-weight: 700; }
+.topic-badge { font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.badge-ai-first { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+.topic-controls { display: flex; gap: 8px; align-items: center; }
+.status-indicator { width: 32px; height: 32px; border-radius: 6px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.status-indicator.todo { background: var(--bg-dark); border-color: var(--text-secondary); }
+.status-indicator.todo::after { content: '○'; color: var(--text-secondary); }
+.status-indicator.in-progress { background: var(--accent-yellow); border-color: var(--accent-yellow); color: var(--bg-dark); }
+.status-indicator.in-progress::after { content: '◐'; }
+.status-indicator.done { background: var(--accent-green); border-color: var(--accent-green); color: var(--bg-dark); }
+.status-indicator.done::after { content: '✓'; }
+.move-btn { padding: 6px 12px; background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; font-size: 11px; transition: all 0.2s; font-weight: 700; }
+.move-btn:hover { background: var(--accent-orange); color: var(--text-primary); border-color: var(--accent-orange); }
+.topic-content { display: none; padding: 24px; border-top: 1px solid var(--border); background: var(--bg-dark); }
+.topic-content.visible { display: block; }
+.subtopic-list { margin-bottom: 24px; }
+.subtopic-item { padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 12px; transition: all 0.2s; }
+.subtopic-item:hover { border-color: var(--accent-yellow); }
+.subtopic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.subtopic-name { font-size: 14px; font-weight: 700; color: var(--accent-yellow); }
+.notes-section { margin-top: 12px; }
+.notes-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; display: block; font-weight: 700; }
+.notes-textarea { width: 100%; min-height: 80px; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; resize: vertical; }
+.notes-textarea:focus { outline: none; border-color: var(--accent-orange); }
+.interview-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+.interview-title { font-size: 14px; font-weight: 700; color: var(--accent-orange); margin-bottom: 12px; }
+.interview-difficulty { margin-bottom: 16px; }
+.difficulty-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; display: block; }
+.interview-questions { list-style: none; padding-left: 16px; }
+.interview-questions li { font-size: 13px; color: var(--text-primary); margin-bottom: 6px; padding-left: 12px; position: relative; }
+.interview-questions li:before { content: "▸"; position: absolute; left: 0; color: var(--accent-yellow); }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; }
+.modal.visible { display: flex; }
+.modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 32px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6); }
+.modal-header { font-size: 20px; font-weight: 900; margin-bottom: 20px; color: var(--accent-orange); }
+.modal-body { margin-bottom: 24px; }
+.modal-footer { display: flex; gap: 12px; justify-content: flex-end; }
+.modal-btn { padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: var(--text-primary); cursor: pointer; font-weight: 700; transition: all 0.2s; }
+.modal-btn.primary { background: var(--accent-orange); border-color: var(--accent-orange); }
+.modal-btn:hover { box-shadow: 0 4px 16px var(--shadow-orange); }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-orange); }
+.section-title { font-size: 18px; font-weight: 900; color: var(--text-secondary); margin-bottom: 16px; margin-top: 32px; padding-top: 32px; border-top: 2px solid var(--border); }
+.empty-state { text-align: center; padding: 48px; color: var(--text-secondary); font-size: 14px; }
+</style>
+
+<div class="app-container">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>Interview Prep Tracker</h1>
+            <div class="progress-overview">
+                <span id="globalProgress">0%</span> Complete
+            </div>
+        </div>
+        <div class="nav-section" id="navSection"></div>
+        <div class="sidebar-footer">
+            <button class="action-btn" onclick="exportData()">📥 Export Backup</button>
+            <button class="action-btn" onclick="importData()">📤 Import Backup</button>
+            <button class="action-btn" onclick="exportNotesToPDF()">📄 Export Notes PDF</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="content-header">
+            <h2 class="content-title" id="contentTitle">Select a Subject</h2>
+            <div class="filter-controls">
+                <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+                <button class="filter-btn" data-filter="todo" onclick="setFilter('todo')">Todo</button>
+                <button class="filter-btn" data-filter="in-progress" onclick="setFilter('in-progress')">In Progress</button>
+                <button class="filter-btn" data-filter="done" onclick="setFilter('done')">Done</button>
+            </div>
+        </div>
+        <div class="content-body" id="contentBody">
+            <div class="empty-state">
+                Select a subject from the sidebar to begin your interview preparation journey
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="importModal">
+    <div class="modal-content">
+        <div class="modal-header">Import Backup</div>
+        <div class="modal-body">
+            <input type="file" id="importFile" accept=".json">
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 16px;">Select a JSON backup file to restore your progress.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn" onclick="closeModal()">Cancel</button>
+            <button class="modal-btn primary" onclick="confirmImport()">Import</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// COMPREHENSIVE STUDY DATA - ALL 9 SUBJECTS WITH DEEP TOPIC BREAKDOWN
+// This includes: CS Core, Java, DevOps, Spring Boot, Microservices, DBMS, Security, AI/ML, DSA
+
+const studyData = {
+    "cs-core": {
+        name: "CS Core (OS + Networks)",
+        topics: [
+            {
+                name: "Operating Systems",
+                subtopics: [
+                    "Process Management & States",
+                    "Process Control Block (PCB)",
+                    "Context Switching",
+                    "Multithreading (User/Kernel/Hybrid)",
+                    "CPU Scheduling Algorithms",
+                    "Preemptive vs Non-Preemptive",
+                    "Real-Time Scheduling",
+                    "Critical Section Problem",
+                    "Mutex, Semaphores, Monitors",
+                    "Deadlock Detection & Prevention",
+                    "Banker's Algorithm",
+                    "Memory Hierarchy",
+                    "Paging and Segmentation",
+                    "Virtual Memory",
+                    "Page Replacement (FIFO/LRU/Optimal)",
+                    "Thrashing & Working Set",
+                    "TLB (Translation Lookaside Buffer)",
+                    "File System Structure",
+                    "Inode Structure",
+                    "File Allocation Methods",
+                    "Disk Scheduling (SCAN/C-SCAN)",
+                    "RAID Levels",
+                    "I/O Hardware & DMA",
+                    "Interrupt Handling",
+                    "Linux Boot Process",
+                    "Linux System Calls",
+                    "fork, exec, wait",
+                    "Linux Memory Management"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is the difference between a process and a thread?",
+                        "Explain the different states of a process.",
+                        "What is virtual memory and why is it needed?",
+                        "What is context switching?",
+                        "Explain paging vs segmentation."
+                    ],
+                    medium: [
+                        "Explain LRU page replacement. How would you implement it efficiently?",
+                        "What is deadlock? Explain the four necessary conditions.",
+                        "Solve producer-consumer problem using semaphores.",
+                        "Differences between preemptive and non-preemptive scheduling.",
+                        "What is thrashing? How can it be prevented?",
+                        "Explain virtual memory with page tables and TLB."
+                    ],
+                    hard: [
+                        "Design a memory allocator minimizing fragmentation for real-time systems.",
+                        "Explain Linux CFS scheduler and process scheduling across cores.",
+                        "Implement a file system supporting snapshots and copy-on-write.",
+                        "Compare RAID levels and their use cases.",
+                        "Design deadlock detection for distributed systems.",
+                        "Explain interrupt vs system call handling in Linux kernel.",
+                        "Implement deadlock detection algorithm for multi-threaded apps."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Computer Networks",
+                subtopics: [
+                    "OSI Model & TCP/IP Model",
+                    "HTTP/HTTPS Protocol",
+                    "HTTP Methods (GET/POST/PUT/DELETE/PATCH)",
+                    "HTTP Status Codes",
+                    "HTTP/1.1 vs HTTP/2 vs HTTP/3",
+                    "DNS Resolution Process",
+                    "DNS Record Types (A/AAAA/CNAME/MX/TXT)",
+                    "FTP, SMTP, POP3, IMAP",
+                    "WebSockets",
+                    "TCP 3-Way Handshake",
+                    "TCP Connection Termination",
+                    "TCP Flow & Congestion Control",
+                    "TCP vs UDP Use Cases",
+                    "Port Numbers & Socket Programming",
+                    "IP Addressing (IPv4/IPv6)",
+                    "Subnetting & CIDR",
+                    "Routing Algorithms",
+                    "Routing Protocols (RIP/OSPF/BGP)",
+                    "NAT (Network Address Translation)",
+                    "ICMP & Ping",
+                    "MAC Addressing",
+                    "ARP Protocol",
+                    "Ethernet Protocol",
+                    "Switches vs Hubs vs Routers",
+                    "Firewalls & Types",
+                    "VPN",
+                    "SSL/TLS Handshake",
+                    "Certificate Authorities & PKI",
+                    "Network Attacks (DDoS/MITM/DNS Spoofing)",
+                    "Load Balancing Algorithms",
+                    "CDN (Content Delivery Network)",
+                    "Reverse Proxy vs Forward Proxy"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is the difference between TCP and UDP?",
+                        "Explain the OSI model layers.",
+                        "What happens when you type a URL in the browser?",
+                        "What is DNS and how does it work?",
+                        "Explain HTTP request-response cycle."
+                    ],
+                    medium: [
+                        "Explain TCP 3-way handshake in detail.",
+                        "Differences between HTTP/1.1, HTTP/2, and HTTP/3?",
+                        "How does SSL/TLS handshake work?",
+                        "Explain how CDN works and improves performance.",
+                        "Hub vs switch vs router differences?",
+                        "How does load balancing work? Explain algorithms."
+                    ],
+                    hard: [
+                        "Design a system to handle 1M concurrent WebSocket connections.",
+                        "Explain TCP congestion control (slow start, fast recovery).",
+                        "How to debug network latency in distributed systems?",
+                        "Design global content delivery for video streaming.",
+                        "Explain BGP routing and internet packet routing.",
+                        "Implement network-level rate limiting.",
+                        "Design DDoS mitigation for high-traffic websites."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            }
+        ]
+    },
+    "java": {
+        name: "Java & JVM",
+        topics: [
+            {
+                name: "JVM Internals",
+                subtopics: [
+                    "JVM Architecture Overview",
+                    "Class Loader Subsystem",
+                    "Runtime Data Areas (Heap/Stack/Method Area)",
+                    "Execution Engine (Interpreter/JIT/GC)",
+                    "Heap Memory Structure (Young/Old/Metaspace)",
+                    "Garbage Collection Algorithms",
+                    "Serial GC, Parallel GC, CMS",
+                    "G1GC, ZGC, Shenandoah",
+                    "GC Tuning Parameters",
+                    "Memory Leak Detection & Prevention",
+                    "JIT Compilation & Optimization",
+                    "JVM Profiling Tools (JProfiler/VisualVM)",
+                    "Thread Dumps & Heap Dumps Analysis",
+                    "Class Loading (Loading/Linking/Initialization)",
+                    "ClassLoader Hierarchy",
+                    "Custom ClassLoaders"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "Difference between JDK, JRE, and JVM?",
+                        "Explain Java compilation and execution.",
+                        "What are different memory areas in JVM?",
+                        "What is garbage collection?",
+                        "Stack vs heap memory?"
+                    ],
+                    medium: [
+                        "How does G1 garbage collector work?",
+                        "Young Generation vs Old Generation?",
+                        "How does JIT compiler optimize code?",
+                        "What causes memory leaks in Java? Detection?",
+                        "Explain class loading mechanism.",
+                        "When to use different GC types?"
+                    ],
+                    hard: [
+                        "Tune JVM for high-throughput, low-latency app.",
+                        "Explain ZGC internals and low pause times.",
+                        "Design custom ClassLoader for plugin system.",
+                        "Troubleshoot production JVM with long GC pauses.",
+                        "Explain escape analysis and scalar replacement.",
+                        "Handle large heap sizes (>100GB) challenges.",
+                        "Analyze thread dump to identify deadlock."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Java Collections",
+                subtopics: [
+                    "Collection Hierarchy",
+                    "ArrayList Internal Implementation",
+                    "LinkedList Internal Implementation",
+                    "Vector and Stack",
+                    "ArrayList vs LinkedList Performance",
+                    "HashSet Internal Implementation",
+                    "LinkedHashSet",
+                    "TreeSet - Red-Black Tree",
+                    "HashMap Internal Implementation",
+                    "HashMap in Java 8+ (Array+LinkedList+RBTree)",
+                    "Hash Collision Handling",
+                    "Load Factor & Rehashing",
+                    "LinkedHashMap",
+                    "TreeMap - Red-Black Tree",
+                    "Hashtable vs HashMap vs ConcurrentHashMap",
+                    "WeakHashMap",
+                    "PriorityQueue - Heap Implementation",
+                    "Deque (ArrayDeque, LinkedList)",
+                    "BlockingQueue (ArrayBlockingQueue)",
+                    "ConcurrentHashMap Internal Implementation",
+                    "CopyOnWriteArrayList",
+                    "Comparable vs Comparator",
+                    "Iterator and ListIterator",
+                    "Fail-Fast vs Fail-Safe Iterators"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "ArrayList vs LinkedList?",
+                        "HashSet vs TreeSet?",
+                        "HashMap vs Hashtable?",
+                        "How does HashMap work internally?",
+                        "Comparable vs Comparator?"
+                    ],
+                    medium: [
+                        "How HashMap handles collisions in Java 8+?",
+                        "What is load factor? What happens during rehashing?",
+                        "How ConcurrentHashMap achieves thread-safety?",
+                        "Fail-fast vs fail-safe iterators?",
+                        "TreeMap internal structure? Red-Black tree?",
+                        "LinkedHashMap vs HashMap?"
+                    ],
+                    hard: [
+                        "Implement custom HashMap from scratch.",
+                        "Design LRU cache using Java collections.",
+                        "ConcurrentHashMap put() operation internals.",
+                        "Mutable object as HashMap key - modify after insertion?",
+                        "Design thread-safe bounded cache with TTL.",
+                        "PriorityQueue heap property during insertion/deletion.",
+                        "Implement concurrent stack using ConcurrentHashMap."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Java Version Features",
+                subtopics: [
+                    "Java 8: Lambda Expressions",
+                    "Functional Interfaces",
+                    "Stream API",
+                    "Default & Static Methods in Interfaces",
+                    "Optional Class",
+                    "Date & Time API (java.time)",
+                    "Method References",
+                    "Java 9: Module System (Jigsaw)",
+                    "JShell (REPL)",
+                    "Factory Methods for Collections",
+                    "Private Methods in Interfaces",
+                    "Java 10: Local Variable Type Inference (var)",
+                    "Java 11 (LTS): HTTP Client API",
+                    "String Methods (isBlank/lines/strip)",
+                    "Java 12-16: Switch Expressions",
+                    "Text Blocks",
+                    "Records",
+                    "Pattern Matching for instanceof",
+                    "Sealed Classes",
+                    "Java 17 (LTS) Features",
+                    "Java 18-21: Virtual Threads (Loom)",
+                    "Pattern Matching for Switch",
+                    "Sequenced Collections"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What are lambda expressions in Java 8?",
+                        "What is Stream API? Common operations?",
+                        "What is Optional class and why useful?",
+                        "What are default methods in interfaces?",
+                        "Explain var keyword in Java 10."
+                    ],
+                    medium: [
+                        "Difference between map() and flatMap()?",
+                        "What are records? When to use them?",
+                        "How do sealed classes work? Problem solved?",
+                        "Explain Java Module System (JPMS).",
+                        "What are virtual threads? vs platform threads?",
+                        "Explain pattern matching for switch."
+                    ],
+                    hard: [
+                        "Design parallel stream processing for large dataset.",
+                        "Migrate monolithic app to Java Module System.",
+                        "Explain virtual threads internals and scheduling.",
+                        "Best practices for Optional? When NOT to use?",
+                        "Memory and performance: records vs regular classes.",
+                        "Design reactive system with virtual threads.",
+                        "Implement custom collector for Stream API."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Kotlin vs Java",
+                subtopics: [
+                    "Kotlin Null Safety",
+                    "Extension Functions",
+                    "Coroutines & Async Programming",
+                    "Data Classes",
+                    "Kotlin-Java Interoperability",
+                    "Groovy Dynamic Typing",
+                    "Groovy Closures",
+                    "Groovy for DSLs",
+                    "Scala Functional Programming",
+                    "Case Classes & Pattern Matching",
+                    "Scala Type System"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "Key differences between Java and Kotlin?",
+                        "How does Kotlin handle null safety?",
+                        "What are extension functions?",
+                        "Java vs Groovy?",
+                        "What are data classes?"
+                    ],
+                    medium: [
+                        "Explain Kotlin coroutines vs Java threads.",
+                        "Migrate Java codebase to Kotlin incrementally?",
+                        "Pattern matching in Scala with examples.",
+                        "Groovy closures vs Java lambdas?",
+                        "How Kotlin achieves compile-time null safety?"
+                    ],
+                    hard: [
+                        "Design DSL in Groovy for specific domain.",
+                        "Implement reactive stream with Kotlin coroutines.",
+                        "Compare concurrency models: Java/Kotlin/Scala.",
+                        "Optimize Kotlin codebase for performance.",
+                        "Scala vs Java type system differences.",
+                        "Design high-performance app with Kotlin Flow.",
+                        "Implement functional vs OOP solution comparison."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Core Java Concepts",
+                subtopics: [
+                    "OOP: Encapsulation/Inheritance/Polymorphism/Abstraction",
+                    "Abstract Classes vs Interfaces",
+                    "SOLID Principles",
+                    "Thread Creation (Runnable/Callable)",
+                    "Thread Lifecycle",
+                    "Synchronization (synchronized keyword)",
+                    "Locks (ReentrantLock/ReadWriteLock)",
+                    "Executor Framework",
+                    "ThreadPoolExecutor",
+                    "Fork/Join Framework",
+                    "CompletableFuture",
+                    "Thread Safety & Volatile",
+                    "Checked vs Unchecked Exceptions",
+                    "Try-with-resources",
+                    "Custom Exception Classes",
+                    "Reflection API",
+                    "Annotations & Custom Annotations",
+                    "Generics (Classes/Methods)",
+                    "Bounded Type Parameters",
+                    "Wildcards (?, extends, super)",
+                    "Type Erasure",
+                    "Serializable Interface",
+                    "Transient & Static Fields",
+                    "Externalization"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "Four pillars of OOP?",
+                        "Abstract class vs interface?",
+                        "Checked vs unchecked exceptions?",
+                        "== vs equals()?",
+                        "What is volatile keyword?"
+                    ],
+                    medium: [
+                        "SOLID principles with examples.",
+                        "How synchronized keyword works? Limitations?",
+                        "ReentrantLock vs synchronized?",
+                        "Explain CompletableFuture with chaining.",
+                        "Type erasure in generics? Implications?",
+                        "Implement producer-consumer with BlockingQueue."
+                    ],
+                    hard: [
+                        "Design adaptive thread pool based on workload.",
+                        "Implement custom annotation processor.",
+                        "Implement lock-free data structure in Java.",
+                        "Design concurrent cache with TTL.",
+                        "Explain happens-before in Java Memory Model.",
+                        "Implement custom serialization for complex object graph.",
+                        "Debug multi-threaded app deadlock."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            }
+        ]
+    },
+    "devops": {
+        name: "DevOps & Tools",
+        topics: [
+            {
+                name: "Git & Version Control",
+                subtopics: [
+                    "Git Workflow (Working/Staging/Repository)",
+                    "Git Commands (add/commit/push/pull/fetch)",
+                    "Branching & Merging",
+                    "Branching Strategies (GitFlow/GitHub Flow)",
+                    "Merge vs Rebase",
+                    "Resolving Merge Conflicts",
+                    "Cherry-pick, Stash, Reset, Revert",
+                    "Git Hooks",
+                    "Git Submodules & Subtrees",
+                    "Git Internals (Objects/Refs/Index)",
+                    "Pull Requests & Code Review"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "git pull vs git fetch?",
+                        "Create and switch to new branch?",
+                        "What is merge conflict? How to resolve?",
+                        "git merge vs git rebase?",
+                        "How to undo last commit?"
+                    ],
+                    medium: [
+                        "Git branching strategy for microservices?",
+                        "What are git hooks? Examples?",
+                        "How to recover deleted branch?",
+                        "reset --soft vs --mixed vs --hard?",
+                        "git cherry-pick and when to use?",
+                        "Handle committed sensitive data?"
+                    ],
+                    hard: [
+                        "Design Git workflow for 50 developers.",
+                        "How Git stores data internally? Object model?",
+                        "Resolve complex 20-file merge conflict.",
+                        "Optimize large Git repository (>10GB).",
+                        "Explain git bisect and usage.",
+                        "Design pre-commit hook system across repos.",
+                        "Migrate SVN to Git preserving history."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Docker & Containers",
+                subtopics: [
+                    "Containers vs Virtual Machines",
+                    "Docker Architecture (Client-Server)",
+                    "Docker Images & Layers",
+                    "Dockerfile Instructions (FROM/RUN/COPY/CMD/ENTRYPOINT)",
+                    "Multi-stage Builds",
+                    "Dockerfile Best Practices",
+                    "Building & Tagging Images",
+                    "Docker Registry (Hub/Private)",
+                    "Image Optimization & Layer Caching",
+                    "Container Lifecycle",
+                    "Docker Run Command Options",
+                    "Container Networking (Bridge/Host/Overlay)",
+                    "Docker Volumes & Data Persistence",
+                    "Docker Compose File Structure",
+                    "Multi-container Applications",
+                    "Environment Variables & Config",
+                    "Container Security Best Practices",
+                    "Image Vulnerability Scanning",
+                    "Docker Content Trust"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "Container vs virtual machine?",
+                        "What is Dockerfile?",
+                        "CMD vs ENTRYPOINT?",
+                        "List all running containers?",
+                        "What is Docker Compose?"
+                    ],
+                    medium: [
+                        "Multi-stage Docker builds? Why useful?",
+                        "Different types of Docker networks?",
+                        "How to persist data in containers?",
+                        "COPY vs ADD in Dockerfile?",
+                        "Optimize Docker image size?",
+                        "Explain Docker layer caching optimization."
+                    ],
+                    hard: [
+                        "Design multi-container microservices with Compose.",
+                        "Implement zero-downtime Docker deployments.",
+                        "Docker networking model. Cross-host communication?",
+                        "Secure Docker containers in production.",
+                        "Design CI/CD for Docker builds/scans/deploys.",
+                        "Performance implications of containers? Optimize?",
+                        "Implement monitoring/logging for containers."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "CI/CD Pipelines",
+                subtopics: [
+                    "Continuous Integration",
+                    "Continuous Delivery vs Deployment",
+                    "Jenkins Architecture (Master-Slave)",
+                    "Jenkins Pipelines (Declarative/Scripted)",
+                    "Jenkinsfile",
+                    "Jenkins Plugins",
+                    "GitHub Actions Workflow Syntax",
+                    "Actions & Marketplace",
+                    "GitLab CI/CD",
+                    "CircleCI, Travis CI",
+                    "Build Automation",
+                    "Automated Testing in Pipelines",
+                    "Artifact Management",
+                    "Deployment Strategies (Blue-Green/Canary/Rolling)"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "CI vs CD?",
+                        "What is Jenkins pipeline?",
+                        "Declarative vs scripted pipelines?",
+                        "What are GitHub Actions?",
+                        "What is Jenkinsfile?"
+                    ],
+                    medium: [
+                        "Design CI/CD for microservices app.",
+                        "Implement automated testing in pipeline.",
+                        "Explain deployment strategies differences.",
+                        "Handle secrets in CI/CD pipelines?",
+                        "Role of artifact repositories?",
+                        "Optimize slow CI/CD pipeline?"
+                    ],
+                    hard: [
+                        "Design multi-environment pipeline with approvals.",
+                        "Implement rollback strategy in CD pipeline.",
+                        "Design pipeline handling DB migrations safely.",
+                        "Implement feature flags in deployment.",
+                        "Design CI/CD for monorepo/multi-repo.",
+                        "Implement security scanning in pipeline.",
+                        "Design zero-downtime for stateful apps."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Build Tools (Maven/Gradle)",
+                subtopics: [
+                    "Maven Project Structure",
+                    "POM.xml Configuration",
+                    "Maven Lifecycle & Phases",
+                    "Dependency Management",
+                    "Maven Plugins",
+                    "Multi-module Projects",
+                    "Gradle Build Script (build.gradle)",
+                    "Gradle Tasks & Dependencies",
+                    "Gradle Dependency Management",
+                    "Gradle vs Maven",
+                    "Multi-project Builds in Gradle",
+                    "Incremental Builds",
+                    "Build Caching"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is Maven? How does it work?",
+                        "Explain Maven build lifecycle.",
+                        "Maven vs Gradle?",
+                        "What is POM file?",
+                        "Add dependency in Maven?"
+                    ],
+                    medium: [
+                        "Maven dependency scopes (compile/provided/test).",
+                        "How Gradle incremental build works?",
+                        "Maven plugins? Commonly used ones?",
+                        "Create multi-module Maven project?",
+                        "Dependency conflict resolution in Maven.",
+                        "How Gradle handles transitive dependencies?"
+                    ],
+                    hard: [
+                        "Design build for 100+ microservices with Gradle.",
+                        "Optimize build times for large monorepo.",
+                        "Implement custom Gradle plugin for code generation.",
+                        "Manage different dependency versions across modules.",
+                        "Design build for local dev and CI/CD environments.",
+                        "Implement build reproducibility across environments.",
+                        "Troubleshoot complex dependency conflict in Maven."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            }
+        ]
+    },
+    "spring-boot": {
+        name: "Spring Boot",
+        topics: [
+            {
+                name: "Spring Core",
+                subtopics: [
+                    "Dependency Injection (DI)",
+                    "Inversion of Control (IoC)",
+                    "Spring IoC Container",
+                    "BeanFactory vs ApplicationContext",
+                    "Bean Lifecycle",
+                    "Bean Scopes (Singleton/Prototype/Request/Session)",
+                    "Constructor vs Setter vs Field Injection",
+                    "Autowiring",
+                    "@Autowired, @Qualifier, @Primary",
+                    "Component Scanning",
+                    "@Component, @Service, @Repository, @Controller",
+                    "@Configuration & @Bean",
+                    "Java-based vs XML Configuration",
+                    "Profiles & Environment Config",
+                    "@Value & Property Files",
+                    "AOP (Aspect-Oriented Programming)",
+                    "Cross-cutting Concerns",
+                    "Aspects, Advice, Pointcuts",
+                    "@Before, @After, @Around"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is Dependency Injection?",
+                        "BeanFactory vs ApplicationContext?",
+                        "Different bean scopes?",
+                        "@Component vs @Service vs @Repository?",
+                        "What is @Autowired?"
+                    ],
+                    medium: [
+                        "Explain Spring bean lifecycle.",
+                        "Constructor vs setter injection? Preferred?",
+                        "How Spring resolves circular dependencies?",
+                        "Explain @Qualifier usage.",
+                        "What is AOP? Real-world use case?",
+                        "How Spring handles beans in multi-threading?"
+                    ],
+                    hard: [
+                        "Design custom Spring annotation combining multiple.",
+                        "Implement conditional bean registration runtime.",
+                        "Explain Spring IoC container internals.",
+                        "Debug circular dependency in large Spring app.",
+                        "Implement custom scope (thread-scoped bean).",
+                        "Design AOP solution for distributed tracing.",
+                        "How Spring proxy-based AOP works? Limitations?"
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Spring Boot Fundamentals",
+                subtopics: [
+                    "Spring Boot vs Spring Framework",
+                    "Auto-configuration",
+                    "Spring Boot Starters",
+                    "@SpringBootApplication",
+                    "application.properties vs application.yml",
+                    "Externalized Configuration",
+                    "Spring Boot Actuator",
+                    "Health Checks, Metrics, Info Endpoints",
+                    "Custom Actuator Endpoints",
+                    "Embedded Servers (Tomcat/Jetty/Undertow)",
+                    "Logging (Logback/SLF4J)",
+                    "DevTools for Hot Reloading"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is Spring Boot?",
+                        "What is auto-configuration?",
+                        "What are Spring Boot starters?",
+                        "@SpringBootApplication purpose?",
+                        "What is Spring Boot Actuator?"
+                    ],
+                    medium: [
+                        "How auto-configuration works internally?",
+                        "Disable specific auto-configuration class?",
+                        "application.properties vs application.yml?",
+                        "Create custom Spring Boot starter?",
+                        "Ways to externalize configuration?",
+                        "Customize embedded server configuration?"
+                    ],
+                    hard: [
+                        "Design custom auto-configuration for third-party lib.",
+                        "Implement custom health indicator for complex system.",
+                        "Explain Spring Boot startup process detail.",
+                        "Design multi-tenant app with tenant configs.",
+                        "Implement graceful shutdown in Spring Boot.",
+                        "Design custom metrics with Spring Actuator.",
+                        "Troubleshoot failed startup due to auto-configuration."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Spring Web & REST",
+                subtopics: [
+                    "Spring MVC",
+                    "DispatcherServlet",
+                    "@Controller vs @RestController",
+                    "@RequestMapping, @GetMapping, @PostMapping",
+                    "@PathVariable, @RequestParam, @RequestBody",
+                    "ResponseEntity",
+                    "@ResponseStatus",
+                    "@ExceptionHandler",
+                    "@ControllerAdvice",
+                    "Global Exception Handling",
+                    "@Valid, @Validated",
+                    "Custom Validators",
+                    "Content Negotiation",
+                    "RESTful API Design",
+                    "HATEOAS",
+                    "API Versioning Strategies",
+                    "File Upload & Download"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "@Controller vs @RestController?",
+                        "What is @RequestMapping?",
+                        "@PathVariable vs @RequestParam?",
+                        "Handle exceptions in Spring MVC?",
+                        "What is @ControllerAdvice?"
+                    ],
+                    medium: [
+                        "DispatcherServlet workflow in Spring MVC.",
+                        "Implement API versioning in REST API.",
+                        "What is HATEOAS? When to use?",
+                        "Implement file upload in Spring Boot.",
+                        "Explain content negotiation.",
+                        "Implement pagination & sorting in REST API."
+                    ],
+                    hard: [
+                        "Design RESTful API for complex e-commerce.",
+                        "Implement rate limiting for REST API.",
+                        "Design global exception handling for microservices.",
+                        "Implement API authentication with Spring Security.",
+                        "Design large file upload system (multi-GB).",
+                        "Implement long-polling or SSE in Spring Boot.",
+                        "Design REST API supporting JSON/XML/CSV."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Spring Data & Database",
+                subtopics: [
+                    "Spring Data JPA",
+                    "JpaRepository, CrudRepository",
+                    "Entity Mapping",
+                    "@Entity, @Table, @Id, @GeneratedValue",
+                    "Relationships (@OneToOne/@OneToMany/@ManyToMany)",
+                    "Fetch Types (Lazy vs Eager)",
+                    "Cascade Types",
+                    "JPQL & Native Queries",
+                    "Derived Query Methods",
+                    "@Query Annotation",
+                    "Named Queries",
+                    "Specifications & Criteria API",
+                    "@Transactional",
+                    "Transaction Propagation",
+                    "Transaction Isolation Levels",
+                    "Database Connection Pooling (HikariCP)",
+                    "Database Migration (Flyway/Liquibase)"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is Spring Data JPA?",
+                        "CrudRepository vs JpaRepository?",
+                        "What is @Entity?",
+                        "Lazy vs Eager fetching?",
+                        "What is @Transactional?"
+                    ],
+                    medium: [
+                        "Explain N+1 query problem. Solution?",
+                        "Different cascade types in JPA?",
+                        "Transaction propagation levels in Spring.",
+                        "JPQL vs native queries?",
+                        "Implement soft delete in Spring Data JPA.",
+                        "@Query vs derived query methods?"
+                    ],
+                    hard: [
+                        "Design multi-tenancy with Spring Data JPA.",
+                        "Implement optimistic locking in high-concurrency.",
+                        "Design caching strategy for Spring Data JPA.",
+                        "Implement database sharding with Spring Data.",
+                        "Troubleshoot performance with inefficient JPA queries.",
+                        "Design DB migrations in zero-downtime deployment.",
+                        "Implement custom repository with Specifications."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Spring Security",
+                subtopics: [
+                    "Authentication & Authorization",
+                    "Security Filter Chain",
+                    "UserDetailsService",
+                    "Password Encoding (BCrypt)",
+                    "Method-level Security",
+                    "@PreAuthorize, @PostAuthorize, @Secured",
+                    "JWT (JSON Web Tokens)",
+                    "OAuth 2.0",
+                    "OAuth 2.0 Grant Types",
+                    "Resource Server & Authorization Server",
+                    "CORS Configuration",
+                    "CSRF Protection"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is Spring Security?",
+                        "Authentication vs authorization?",
+                        "What is UserDetailsService?",
+                        "What is JWT?",
+                        "What is OAuth 2.0?"
+                    ],
+                    medium: [
+                        "Explain Spring Security filter chain.",
+                        "Implement JWT authentication in Spring Boot.",
+                        "Different OAuth 2.0 grant types? Usage?",
+                        "Implement role-based access control.",
+                        "What is CORS? Configure in Spring Boot?",
+                        "How password encoding works in Spring Security?"
+                    ],
+                    hard: [
+                        "Design multi-tenant authentication with Spring Security.",
+                        "Implement SSO with OAuth 2.0.",
+                        "Design security for microservices with API gateway.",
+                        "Implement refresh token rotation for security.",
+                        "Design fine-grained authorization with Spring Security.",
+                        "Protect against CSRF/XSS/SQL Injection.",
+                        "Implement custom authentication provider for legacy system."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Spring Boot Testing",
+                subtopics: [
+                    "Unit Testing with JUnit 5",
+                    "Mockito (@Mock/@InjectMocks/@Spy)",
+                    "@SpringBootTest",
+                    "@WebMvcTest for Controllers",
+                    "@DataJpaTest for Repositories",
+                    "MockMvc for REST API Testing",
+                    "TestRestTemplate",
+                    "Integration Testing",
+                    "Test Containers for Database",
+                    "Test Coverage with JaCoCo"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "Unit testing vs integration testing?",
+                        "What is @SpringBootTest?",
+                        "What is Mockito?",
+                        "@WebMvcTest used for?",
+                        "What is MockMvc?"
+                    ],
+                    medium: [
+                        "Test REST controller using MockMvc.",
+                        "@DataJpaTest vs @SpringBootTest?",
+                        "Test service layer with database interactions.",
+                        "TestContainers in integration testing.",
+                        "Mock external API calls in tests.",
+                        "@Mock vs @MockBean?"
+                    ],
+                    hard: [
+                        "Design comprehensive testing for microservices.",
+                        "Test complex transaction with multiple DB operations.",
+                        "Implement integration tests for message queues/async.",
+                        "Test security configurations in Spring Boot.",
+                        "Design performance testing framework.",
+                        "Achieve high coverage with fast test execution.",
+                        "Implement contract testing with Spring Cloud Contract."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Spring Boot Advanced",
+                subtopics: [
+                    "Caching",
+                    "@Cacheable, @CacheEvict, @CachePut",
+                    "Cache Providers (Ehcache/Redis/Caffeine)",
+                    "Async Processing",
+                    "@Async & @EnableAsync",
+                    "Scheduling",
+                    "@Scheduled & Cron Expressions",
+                    "Event Handling",
+                    "ApplicationEvent & @EventListener",
+                    "WebSockets",
+                    "Batch Processing (Spring Batch)",
+                    "Reactive Programming (Spring WebFlux)",
+                    "Reactive Streams, Mono, Flux"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is caching in Spring Boot?",
+                        "What is @Cacheable?",
+                        "@Async used for?",
+                        "What is @Scheduled?",
+                        "What is Spring WebFlux?"
+                    ],
+                    medium: [
+                        "Implement distributed caching with Redis.",
+                        "@Cacheable vs @CachePut?",
+                        "Handle exceptions in @Async methods.",
+                        "Spring MVC vs Spring WebFlux?",
+                        "Implement scheduled job at specific intervals.",
+                        "Explain backpressure in reactive programming."
+                    ],
+                    hard: [
+                        "Design multi-level caching for high-traffic app.",
+                        "Implement distributed scheduler in microservices.",
+                        "Design event-driven architecture with Spring events.",
+                        "Implement reactive REST API with non-blocking DB.",
+                        "Migrate from Spring MVC to Spring WebFlux.",
+                        "Design batch processing for millions of records.",
+                        "Implement WebSocket real-time notifications at scale."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            }
+        ]
+    },
+    "microservices": {
+        name: "Microservices & REST",
+        topics: [
+            {
+                name: "Microservices Architecture",
+                subtopics: [
+                    "Microservices Principles",
+                    "Monolithic vs Microservices",
+                    "Service Boundaries & Domain-Driven Design",
+                    "Database per Service Pattern",
+                    "Synchronous Communication (REST/gRPC)",
+                    "Asynchronous Communication (MQ/Event Streaming)",
+                    "Service Discovery",
+                    "Eureka, Consul",
+                    "Client-side vs Server-side Discovery",
+                    "API Gateway Pattern",
+                    "Spring Cloud Gateway, Kong, Zuul",
+                    "Load Balancing",
+                    "Circuit Breaker Pattern",
+                    "Resilience4j, Hystrix",
+                    "Distributed Tracing",
+                    "Zipkin, Jaeger",
+                    "OpenTelemetry",
+                    "Configuration Management",
+                    "Spring Cloud Config",
+                    "Centralized Configuration"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is microservices architecture?",
+                        "Monolithic vs microservices?",
+                        "What is service discovery?",
+                        "What is API gateway?",
+                        "Circuit breaker pattern?"
+                    ],
+                    medium: [
+                        "Database per service pattern challenges?",
+                        "How microservices communicate?",
+                        "What is distributed tracing? Importance?",
+                        "Implement service-to-service authentication.",
+                        "Explain saga pattern for distributed transactions.",
+                        "Orchestration vs choreography in microservices?"
+                    ],
+                    hard: [
+                        "Design microservices for e-commerce platform.",
+                        "Handle distributed transactions across microservices.",
+                        "Design resilient system handling partial failures.",
+                        "Implement canary deployment for microservices.",
+                        "Design monitoring and alerting for microservices.",
+                        "Handle data consistency in distributed system.",
+                        "Design multi-region deployment with disaster recovery."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "RESTful API Design",
+                subtopics: [
+                    "REST Principles",
+                    "Statelessness, Client-Server, Uniform Interface",
+                    "Resource-based URLs",
+                    "HTTP Methods (GET/POST/PUT/DELETE/PATCH)",
+                    "Idempotency",
+                    "HTTP Status Codes",
+                    "2xx, 3xx, 4xx, 5xx Codes",
+                    "Proper Status Code Usage",
+                    "API Design Best Practices",
+                    "Naming Conventions",
+                    "Pagination, Filtering, Sorting",
+                    "API Versioning (URI/Header/Query)",
+                    "Error Handling & Standard Responses",
+                    "HATEOAS",
+                    "API Documentation",
+                    "OpenAPI/Swagger",
+                    "API Security",
+                    "Authentication (Basic/Bearer/OAuth)",
+                    "Rate Limiting",
+                    "API Keys"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is REST?",
+                        "PUT vs PATCH?",
+                        "HTTP status for successful creation?",
+                        "What is idempotency?",
+                        "What is API versioning?"
+                    ],
+                    medium: [
+                        "Design RESTful API for blog system.",
+                        "Different API versioning strategies? Preferred?",
+                        "Implement pagination in REST API.",
+                        "What is HATEOAS? When to use?",
+                        "Design error responses for REST API.",
+                        "Explain rate limiting strategies."
+                    ],
+                    hard: [
+                        "Design REST API for complex reservation with conflicts.",
+                        "Implement partial response (field filtering).",
+                        "Design API supporting bulk operations efficiently.",
+                        "Handle long-running operations RESTfully.",
+                        "Design backward-compatible API evolution.",
+                        "Implement GraphQL vs REST hybrid approach.",
+                        "Design API gateway aggregating multiple microservices."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "Message Queues & Streaming",
+                subtopics: [
+                    "Message Queue Concepts",
+                    "Point-to-Point vs Publish-Subscribe",
+                    "Message Acknowledgment",
+                    "Dead Letter Queues",
+                    "RabbitMQ",
+                    "Exchanges, Queues, Bindings",
+                    "Exchange Types (Direct/Topic/Fanout/Headers)",
+                    "Apache Kafka",
+                    "Topics, Partitions, Consumer Groups",
+                    "Kafka Producers & Consumers",
+                    "Kafka Connect & Kafka Streams",
+                    "Event-Driven Architecture",
+                    "Event Sourcing",
+                    "CQRS",
+                    "Saga Pattern"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is message queue?",
+                        "Queue vs topic?",
+                        "What is Apache Kafka?",
+                        "What is dead letter queue?",
+                        "Event-driven architecture?"
+                    ],
+                    medium: [
+                        "Different exchange types in RabbitMQ.",
+                        "How Kafka ensures message ordering?",
+                        "Consumer group in Kafka?",
+                        "Handle message failures in MQ system.",
+                        "At-most-once vs at-least-once vs exactly-once delivery.",
+                        "Event sourcing? When to use?"
+                    ],
+                    hard: [
+                        "Design distributed event-driven order processing.",
+                        "Implement exactly-once processing in Kafka.",
+                        "Design saga pattern for distributed transaction.",
+                        "Handle schema evolution in event-driven system.",
+                        "Design real-time analytics with Kafka Streams.",
+                        "Implement event replay and time-travel debugging.",
+                        "Design multi-region event streaming with conflict resolution."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            },
+            {
+                name: "gRPC & Protocol Buffers",
+                subtopics: [
+                    "gRPC Fundamentals",
+                    "gRPC vs REST",
+                    "Protocol Buffers (Protobuf)",
+                    ".proto File Definition",
+                    "Service Definitions",
+                    "Unary, Server/Client/Bidirectional Streaming",
+                    "gRPC Code Generation",
+                    "gRPC Error Handling",
+                    "gRPC Interceptors",
+                    "Load Balancing with gRPC"
+                ],
+                interviewQuestions: {
+                    easy: [
+                        "What is gRPC?",
+                        "What are Protocol Buffers?",
+                        "gRPC vs REST?",
+                        "Types of gRPC communication?",
+                        "When choose gRPC over REST?"
+                    ],
+                    medium: [
+                        "Define service in .proto file.",
+                        "Bidirectional streaming use case.",
+                        "Load balancing with gRPC.",
+                        "gRPC interceptors? When to use?",
+                        "Handle versioning in gRPC services.",
+                        "Performance benefits of gRPC over REST."
+                    ],
+                    hard: [
+                        "Design microservices using gRPC internally.",
+                        "Implement authentication/authorization in gRPC.",
+                        "Design system using REST (external) and gRPC (internal).",
+                        "Handle backward compatibility in Protobuf schemas.",
+                        "Implement gRPC streaming for real-time data.",
+                        "Implement circuit breaking/retry for gRPC calls.",
+                        "Design gRPC-based API gateway."
+                    ]
+                },
+                aiFirst: false,
+                inScope: true,
+                status: "todo",
+                notes: ""
+            }
+        ]
+    }
+};
+
+// CONTINUING WITH MORE SUBJECTS... (Character limit - will continue in next script block)
+</script>
+
+<script>
+// CONTINUING WITH DBMS, SECURITY, AI/ML, AND DSA SUBJECTS
+
+studyData["dbms"] = {
+    name: "Database Management",
+    topics: [
+        {
+            name: "SQL Writing & Optimization",
+            subtopics: [
+                "SELECT, INSERT, UPDATE, DELETE",
+                "WHERE, ORDER BY, GROUP BY, HAVING",
+                "INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL OUTER",
+                "CROSS JOIN, SELF JOIN",
+                "Subqueries & Nested Queries",
+                "Correlated Subqueries",
+                "Aggregate Functions (COUNT/SUM/AVG/MIN/MAX)",
+                "Window Functions",
+                "ROW_NUMBER, RANK, DENSE_RANK, LEAD, LAG",
+                "Common Table Expressions (CTEs)",
+                "Recursive CTEs",
+                "Views & Materialized Views",
+                "Stored Procedures & Functions",
+                "Triggers",
+                "EXPLAIN Plan Analysis",
+                "Query Execution Plans",
+                "Query Rewriting Techniques"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Find second highest salary from Employee table.",
+                    "INNER JOIN vs LEFT JOIN?",
+                    "Find duplicate records in table.",
+                    "What is subquery?",
+                    "Find employees earning more than managers."
+                ],
+                medium: [
+                    "Use window functions to rank employees by salary per department.",
+                    "WHERE vs HAVING?",
+                    "Find top 3 highest salaries in each department.",
+                    "What is CTE? Write recursive CTE for number sequence.",
+                    "Query to pivot rows into columns.",
+                    "Optimize slow query? Walk through approach."
+                ],
+                hard: [
+                    "Find gaps in sequence of IDs.",
+                    "Design query to detect fraudulent transaction patterns.",
+                    "Write complex analytical query with CTEs and window functions.",
+                    "Rewrite correlated subquery for better performance.",
+                    "Calculate running totals and moving averages.",
+                    "Find longest consecutive streak of events.",
+                    "Optimize query joining 5+ tables."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Database Theory",
+            subtopics: [
+                "Relational Database Concepts",
+                "Primary Key, Foreign Key",
+                "Unique, Not Null, Check Constraints",
+                "Normalization",
+                "1NF, 2NF, 3NF, BCNF",
+                "Denormalization & When to Use",
+                "Indexes",
+                "B-Tree, Hash, Bitmap Indexes",
+                "Clustered vs Non-clustered Indexes",
+                "Index Strategies",
+                "ACID Properties",
+                "Transaction Isolation Levels",
+                "Read Uncommitted/Committed/Repeatable Read/Serializable",
+                "Concurrency Control",
+                "Locking (Pessimistic vs Optimistic)",
+                "Deadlocks - Detection & Prevention",
+                "MVCC",
+                "ER Diagrams",
+                "Schema Design Best Practices"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "What are ACID properties?",
+                    "Primary key vs foreign key?",
+                    "What is normalization?",
+                    "What is index?",
+                    "Different types of joins?"
+                ],
+                medium: [
+                    "Explain normal forms with examples.",
+                    "Different transaction isolation levels? Problems solved?",
+                    "Optimistic vs pessimistic locking.",
+                    "What is deadlock? Prevention?",
+                    "Explain MVCC and concurrency.",
+                    "When to denormalize schema?"
+                ],
+                hard: [
+                    "Design schema for complex multi-tenant SaaS.",
+                    "Handle two transactions updating same row.",
+                    "Design database for time-series data efficiently.",
+                    "Explain database replication strategies.",
+                    "Design database for billions of records.",
+                    "Design schema for social network.",
+                    "Implement distributed transaction across multiple DBs."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Database Types",
+            subtopics: [
+                "Relational (MySQL/PostgreSQL/Oracle)",
+                "NoSQL Databases",
+                "Document Stores (MongoDB/Couchbase)",
+                "Key-Value Stores (Redis/DynamoDB)",
+                "Column-Family (Cassandra/HBase)",
+                "Graph Databases (Neo4j/Neptune)",
+                "Time-Series Databases",
+                "InfluxDB, TimescaleDB",
+                "Vector Databases",
+                "Pinecone, Weaviate, Milvus, Qdrant",
+                "Similarity Search & Embeddings",
+                "In-Memory Databases",
+                "Redis for Caching",
+                "Search Engines (Elasticsearch)",
+                "Full-Text Search",
+                "Object Storage (S3/Azure Blob)",
+                "CAP Theorem",
+                "Consistency, Availability, Partition Tolerance",
+                "Choosing Right Database"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "SQL vs NoSQL databases?",
+                    "When use MongoDB over MySQL?",
+                    "What is Redis? Usage?",
+                    "What is graph database?",
+                    "CAP theorem?"
+                ],
+                medium: [
+                    "Use cases for different NoSQL types.",
+                    "How Cassandra achieves high availability?",
+                    "Vector databases? When to use?",
+                    "Trade-offs between consistency and availability.",
+                    "Design caching layer with Redis.",
+                    "Elasticsearch vs traditional database?"
+                ],
+                hard: [
+                    "Design storage strategy for ACID + horizontal scalability.",
+                    "Implement recommendation system with graph database.",
+                    "Design multi-model database architecture.",
+                    "Implement semantic search with vector databases.",
+                    "Design time-series storage for millions writes/second.",
+                    "Choose between database types for greenfield project.",
+                    "Implement hybrid SQL/NoSQL architecture."
+                ]
+            },
+            aiFirst: true,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Database Performance & Scaling",
+            subtopics: [
+                "Query Performance Tuning",
+                "Identifying Slow Queries",
+                "Query Profiling",
+                "Index Optimization",
+                "Database Caching",
+                "Query Result Caching",
+                "Connection Pooling",
+                "Replication",
+                "Master-Slave Replication",
+                "Multi-Master Replication",
+                "Sharding",
+                "Horizontal Partitioning",
+                "Sharding Strategies (Range/Hash/List)",
+                "Partitioning",
+                "Table Partitioning Strategies",
+                "Database Monitoring",
+                "Slow Query Logs",
+                "Performance Metrics"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "What is database replication?",
+                    "What is connection pooling?",
+                    "Vertical vs horizontal scaling?",
+                    "What is database sharding?",
+                    "Identify slow query?"
+                ],
+                medium: [
+                    "Different database sharding strategies.",
+                    "Implement read replicas for performance.",
+                    "Challenges of database sharding.",
+                    "Choose right sharding key.",
+                    "Trade-offs: replication vs sharding.",
+                    "Monitor database performance in production."
+                ],
+                hard: [
+                    "Design sharding for multi-tenant with billions of records.",
+                    "Handle data migration in sharded database.",
+                    "Design architecture for 100k writes/second.",
+                    "Implement cross-shard queries efficiently.",
+                    "Design disaster recovery for distributed database.",
+                    "Rebalance shards when distribution skewed.",
+                    "Implement zero-downtime database migration."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        }
+    ]
+};
+
+studyData["security"] = {
+    name: "Security",
+    topics: [
+        {
+            name: "Web Security",
+            subtopics: [
+                "HTTPS and SSL/TLS",
+                "SSL/TLS Handshake Process",
+                "Certificate Authorities & PKI",
+                "SSL Certificate Types",
+                "SQL Injection",
+                "Cross-Site Scripting (XSS)",
+                "Cross-Site Request Forgery (CSRF)",
+                "Clickjacking",
+                "Session Hijacking",
+                "XML External Entity (XXE)",
+                "Server-Side Request Forgery (SSRF)",
+                "Content Security Policy (CSP)",
+                "X-Frame-Options",
+                "Strict-Transport-Security (HSTS)",
+                "X-Content-Type-Options",
+                "Password Hashing (bcrypt/Argon2)",
+                "Multi-Factor Authentication (MFA)",
+                "Session Management",
+                "Token-Based Auth (JWT)"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "What is HTTPS? How does it work?",
+                    "SQL injection? Prevention?",
+                    "What is XSS? Prevention?",
+                    "What is CSRF? Prevention?",
+                    "Encryption vs hashing?"
+                ],
+                medium: [
+                    "SSL/TLS handshake process detail.",
+                    "Implement secure password storage.",
+                    "Security headers? Importance?",
+                    "Symmetric vs asymmetric encryption.",
+                    "Implement JWT authentication securely.",
+                    "What is CSP? Configuration?"
+                ],
+                hard: [
+                    "Design secure auth for multi-tenant app.",
+                    "Implement zero-trust in microservices.",
+                    "Design system to detect credential stuffing.",
+                    "Implement certificate pinning in mobile.",
+                    "Design secure API gateway with multiple auth methods.",
+                    "Handle security breach in production? IR process.",
+                    "Implement secure file upload preventing malicious files."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Encryption & Cryptography",
+            subtopics: [
+                "Encryption Fundamentals",
+                "Symmetric Encryption (AES/DES)",
+                "Asymmetric Encryption (RSA/ECC)",
+                "Hashing Algorithms",
+                "SHA-256, SHA-3",
+                "MD5 (Deprecated)",
+                "Digital Signatures",
+                "Public Key Infrastructure (PKI)",
+                "Key Management",
+                "Key Generation & Storage",
+                "Key Rotation",
+                "Secrets Management (Vault/AWS Secrets)",
+                "Encryption at Rest",
+                "Encryption in Transit",
+                "End-to-End Encryption"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Symmetric vs asymmetric encryption?",
+                    "What is hash function?",
+                    "What is RSA encryption?",
+                    "What is digital signature?",
+                    "What is encryption at rest?"
+                ],
+                medium: [
+                    "How AES encryption works?",
+                    "Explain public key cryptography.",
+                    "Hashing vs encryption?",
+                    "Implement E2E encryption in messaging app.",
+                    "Key rotation? Importance?",
+                    "How digital signatures ensure authenticity?"
+                ],
+                hard: [
+                    "Design secure key management for multi-region app.",
+                    "Implement database encryption for sensitive data.",
+                    "Design E2E encrypted communication system.",
+                    "Handle encryption key compromise in production.",
+                    "Implement zero-knowledge proof auth.",
+                    "Design secure file storage with client-side encryption.",
+                    "Implement homomorphic encryption for privacy-preserving."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Application Security",
+            subtopics: [
+                "Secure Coding Practices",
+                "Input Validation & Sanitization",
+                "Output Encoding",
+                "Parameterized Queries",
+                "Dependency Security",
+                "Vulnerability Scanning (Snyk/OWASP)",
+                "Software Composition Analysis",
+                "API Security",
+                "API Authentication & Authorization",
+                "Rate Limiting & Throttling",
+                "API Key Management",
+                "Secrets Management",
+                "Environment Variables",
+                "Secure Configuration Management",
+                "Security Testing",
+                "SAST & DAST",
+                "Penetration Testing",
+                "Security Audits"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "What is input validation?",
+                    "What are parameterized queries?",
+                    "What is dependency scanning?",
+                    "What is rate limiting?",
+                    "What is SAST vs DAST?"
+                ],
+                medium: [
+                    "Implement secure input validation framework.",
+                    "How to secure API endpoints?",
+                    "Implement rate limiting for API.",
+                    "What is secrets management? Best practices?",
+                    "Difference between SAST and DAST?",
+                    "Implement security headers in application."
+                ],
+                hard: [
+                    "Design comprehensive security testing strategy.",
+                    "Implement automated security scanning in CI/CD.",
+                    "Design secrets management for microservices.",
+                    "Implement dynamic rate limiting based on user behavior.",
+                    "Design security audit system for compliance.",
+                    "Implement zero-day vulnerability response process.",
+                    "Design secure multi-layer defense architecture."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        }
+    ]
+};
+
+studyData["ai"] = {
+    name: "AI/ML & Agentic AI",
+    topics: [
+        {
+            name: "AI Model Development",
+            subtopics: [
+                "Machine Learning Fundamentals",
+                "Supervised vs Unsupervised Learning",
+                "Classification vs Regression",
+                "Training, Validation, Test Sets",
+                "Overfitting & Underfitting",
+                "Bias-Variance Tradeoff",
+                "Feature Engineering",
+                "Feature Scaling & Normalization",
+                "Model Evaluation Metrics",
+                "Confusion Matrix, Precision, Recall, F1",
+                "ROC Curve & AUC",
+                "Neural Networks Basics",
+                "Forward & Backward Propagation",
+                "Activation Functions",
+                "Loss Functions",
+                "Gradient Descent Optimization",
+                "Deep Learning Architectures",
+                "CNNs for Computer Vision",
+                "RNNs, LSTMs for Sequences",
+                "Transformers",
+                "Attention Mechanism"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Supervised vs unsupervised learning?",
+                    "What is overfitting?",
+                    "What is feature engineering?",
+                    "Precision vs recall?",
+                    "What is gradient descent?"
+                ],
+                medium: [
+                    "Explain bias-variance tradeoff.",
+                    "How to handle imbalanced datasets?",
+                    "What is dropout? Why used?",
+                    "Explain transformer architecture.",
+                    "How attention mechanism works?",
+                    "Different optimization algorithms comparison."
+                ],
+                hard: [
+                    "Design ML pipeline for real-time fraud detection.",
+                    "Implement custom attention mechanism.",
+                    "Handle catastrophic forgetting in continual learning.",
+                    "Design A/B testing framework for ML models.",
+                    "Implement transfer learning for domain adaptation.",
+                    "Design multi-task learning architecture.",
+                    "Handle concept drift in production ML models."
+                ]
+            },
+            aiFirst: true,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "AI Model Finetuning",
+            subtopics: [
+                "Transfer Learning Concepts",
+                "Pretrained Models",
+                "Feature Extraction vs Finetuning",
+                "LoRA (Low-Rank Adaptation)",
+                "QLoRA",
+                "PEFT (Parameter-Efficient Finetuning)",
+                "Instruction Tuning",
+                "RLHF (Reinforcement Learning from Human Feedback)",
+                "DPO (Direct Preference Optimization)",
+                "Dataset Preparation for Finetuning",
+                "Data Augmentation Techniques",
+                "Hyperparameter Tuning",
+                "Learning Rate Scheduling",
+                "Model Evaluation & Benchmarking",
+                "Catastrophic Forgetting Prevention"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "What is transfer learning?",
+                    "Feature extraction vs finetuning?",
+                    "What is LoRA?",
+                    "What is instruction tuning?",
+                    "Why finetune instead of training from scratch?"
+                ],
+                medium: [
+                    "How LoRA works? Benefits?",
+                    "Implement PEFT for large model.",
+                    "What is RLHF? How implemented?",
+                    "Prepare dataset for instruction tuning.",
+                    "Handle catastrophic forgetting during finetuning.",
+                    "Compare LoRA vs full finetuning."
+                ],
+                hard: [
+                    "Design efficient finetuning pipeline for 70B model.",
+                    "Implement DPO for preference optimization.",
+                    "Design multi-stage finetuning strategy.",
+                    "Optimize finetuning for limited compute resources.",
+                    "Implement continual learning with PEFT.",
+                    "Design evaluation framework for finetuned models.",
+                    "Handle domain shift during finetuning."
+                ]
+            },
+            aiFirst: true,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "AI Integration - RAG & Vector DBs",
+            subtopics: [
+                "RAG (Retrieval-Augmented Generation)",
+                "RAG Architecture & Workflow",
+                "Chunking Strategies",
+                "Embedding Models",
+                "Text Embeddings (OpenAI/Cohere/Custom)",
+                "Vector Databases",
+                "Pinecone, Weaviate, Milvus, Qdrant",
+                "Similarity Search Algorithms",
+                "Cosine Similarity, Euclidean Distance",
+                "HNSW, IVF Indexes",
+                "Hybrid Search (Vector + Keyword)",
+                "Reranking Strategies",
+                "Context Window Management",
+                "Prompt Engineering for RAG",
+                "RAG Evaluation Metrics"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "What is RAG?",
+                    "What are embeddings?",
+                    "What is vector database?",
+                    "What is similarity search?",
+                    "Why use RAG instead of finetuning?"
+                ],
+                medium: [
+                    "Design RAG system for enterprise knowledge base.",
+                    "Chunking strategies for different document types?",
+                    "Implement hybrid search combining vector and keyword.",
+                    "How to choose embedding model?",
+                    "Implement reranking in RAG pipeline.",
+                    "Handle context window limitations."
+                ],
+                hard: [
+                    "Design multi-modal RAG system (text + images).",
+                    "Implement incremental indexing for real-time updates.",
+                    "Design RAG evaluation framework with metrics.",
+                    "Optimize vector search for low-latency requirements.",
+                    "Implement multi-tenancy in vector database.",
+                    "Design hybrid RAG with graph database.",
+                    "Handle hallucination in RAG systems."
+                ]
+            },
+            aiFirst: true,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Agentic AI - LangGraph & LangChain",
+            subtopics: [
+                "LangChain Fundamentals",
+                "Chains, Agents, Tools",
+                "Memory Management",
+                "Conversational Memory",
+                "LangGraph Architecture",
+                "State Graphs",
+                "Nodes, Edges, Conditional Routing",
+                "Tool Integration",
+                "Function Calling",
+                "ReAct Pattern",
+                "Plan-and-Execute Pattern",
+                "Multi-Agent Systems",
+                "Agent Collaboration",
+                "Human-in-the-Loop",
+                "Streaming & Callbacks",
+                "Error Handling & Retries"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "What is LangChain?",
+                    "What is LangGraph?",
+                    "What are agents in LLMs?",
+                    "What is ReAct pattern?",
+                    "What is function calling?"
+                ],
+                medium: [
+                    "Design agentic workflow with LangGraph.",
+                    "Implement custom tool for LangChain agent.",
+                    "How to manage state in LangGraph?",
+                    "Implement conversational memory.",
+                    "Design multi-step agent workflow.",
+                    "Handle errors in agentic systems."
+                ],
+                hard: [
+                    "Design multi-agent system with collaboration.",
+                    "Implement complex state machine with LangGraph.",
+                    "Design human-in-the-loop workflow for critical decisions.",
+                    "Optimize agent execution for latency.",
+                    "Implement adaptive routing based on task complexity.",
+                    "Design observability for agentic systems.",
+                    "Handle agent failures gracefully in production."
+                ]
+            },
+            aiFirst: true,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "MCP & Agentic Tooling",
+            subtopics: [
+                "Model Context Protocol (MCP)",
+                "MCP Architecture",
+                "Tool Discovery & Integration",
+                "Context Management",
+                "MCP Server Implementation",
+                "MCP Client Integration",
+                "Security in MCP",
+                "Authentication & Authorization",
+                "Tool Calling Standards",
+                "Streaming Responses",
+                "Error Handling in MCP",
+                "MCP Best Practices"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "What is Model Context Protocol?",
+                    "Why use MCP for agentic systems?",
+                    "What is tool discovery?",
+                    "What is MCP server?",
+                    "How MCP differs from function calling?"
+                ],
+                medium: [
+                    "Implement MCP server for custom tools.",
+                    "Design tool discovery mechanism.",
+                    "Handle authentication in MCP.",
+                    "Implement streaming responses via MCP.",
+                    "Design context management strategy.",
+                    "Handle tool calling errors gracefully."
+                ],
+                hard: [
+                    "Design scalable MCP architecture for enterprise.",
+                    "Implement dynamic tool registration.",
+                    "Design security model for untrusted tools.",
+                    "Optimize MCP for high-throughput scenarios.",
+                    "Implement versioning for MCP tools.",
+                    "Design observability for MCP-based systems.",
+                    "Handle partial tool failures in multi-tool workflows."
+                ]
+            },
+            aiFirst: true,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "AI Ops & Production ML",
+            subtopics: [
+                "MLOps Fundamentals",
+                "Model Versioning",
+                "Model Registry",
+                "CI/CD for ML Models",
+                "Model Serving",
+                "Online vs Offline Inference",
+                "Batch vs Real-time Predictions",
+                "Model Monitoring",
+                "Drift Detection (Data & Concept)",
+                "Performance Monitoring",
+                "A/B Testing for Models",
+                "Shadow Deployment",
+                "Canary Releases for ML",
+                "Model Retraining Strategies",
+                "Feature Stores",
+                "Experiment Tracking"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "What is MLOps?",
+                    "What is model versioning?",
+                    "Online vs offline inference?",
+                    "What is model drift?",
+                    "What is A/B testing for models?"
+                ],
+                medium: [
+                    "Design CI/CD pipeline for ML models.",
+                    "Implement model monitoring system.",
+                    "How to detect concept drift?",
+                    "Design canary deployment for ML model.",
+                    "Implement automated retraining pipeline.",
+                    "What is feature store? Benefits?"
+                ],
+                hard: [
+                    "Design end-to-end MLOps platform.",
+                    "Implement real-time drift detection at scale.",
+                    "Design multi-model serving architecture.",
+                    "Optimize inference latency for large models.",
+                    "Implement automated model rollback strategy.",
+                    "Design feature store for real-time ML.",
+                    "Handle model serving for millions of requests/sec."
+                ]
+            },
+            aiFirst: true,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Token Optimization & Cost",
+            subtopics: [
+                "Token Counting & Estimation",
+                "Prompt Compression Techniques",
+                "Context Window Optimization",
+                "Caching Strategies",
+                "Prompt Caching",
+                "Response Caching",
+                "Batch Processing for Cost Savings",
+                "Model Selection by Cost",
+                "Smaller Models for Simple Tasks",
+                "Token Budgeting",
+                "Cost Monitoring & Alerts",
+                "Rate Limiting Strategies",
+                "Fallback to Cheaper Models"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "What is token in LLMs?",
+                    "How to estimate token usage?",
+                    "What is prompt caching?",
+                    "Why optimize tokens?",
+                    "What is context window?"
+                ],
+                medium: [
+                    "Implement prompt compression strategy.",
+                    "Design caching layer for LLM responses.",
+                    "How to choose right model based on cost vs quality?",
+                    "Implement token budgeting system.",
+                    "Monitor and optimize LLM costs.",
+                    "Design fallback strategy for cost optimization."
+                ],
+                hard: [
+                    "Design cost-optimized multi-model routing system.",
+                    "Implement intelligent caching with invalidation strategy.",
+                    "Optimize token usage for RAG system at scale.",
+                    "Design cost anomaly detection for LLM usage.",
+                    "Implement dynamic model selection based on budget.",
+                    "Design token-aware batching system.",
+                    "Optimize context window usage for long conversations."
+                ]
+            },
+            aiFirst: true,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        }
+    ]
+};
+
+studyData["dsa"] = {
+    name: "Data Structures & Algorithms",
+    topics: [
+        {
+            name: "Arrays & Strings",
+            subtopics: [
+                "Array Basics & Operations",
+                "Two Pointers Technique",
+                "Sliding Window",
+                "Prefix Sum",
+                "Kadane's Algorithm",
+                "String Manipulation",
+                "String Matching (KMP, Rabin-Karp)",
+                "Palindromes",
+                "Anagrams & Character Frequency",
+                "Substring Problems"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Find max element in array.",
+                    "Reverse a string.",
+                    "Check if string is palindrome.",
+                    "Find duplicates in array.",
+                    "Two Sum problem."
+                ],
+                medium: [
+                    "Longest substring without repeating characters.",
+                    "Container with most water.",
+                    "3Sum problem.",
+                    "Product of array except self.",
+                    "Longest palindromic substring.",
+                    "Minimum window substring."
+                ],
+                hard: [
+                    "Median of two sorted arrays.",
+                    "Trapping rain water.",
+                    "Regular expression matching.",
+                    "Edit distance (Levenshtein).",
+                    "Longest valid parentheses.",
+                    "Minimum window subsequence.",
+                    "Maximum rectangle in histogram."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Linked Lists",
+            subtopics: [
+                "Singly Linked List",
+                "Doubly Linked List",
+                "Circular Linked List",
+                "Fast & Slow Pointers",
+                "Cycle Detection (Floyd's Algorithm)",
+                "Reverse Linked List",
+                "Merge Two Sorted Lists",
+                "Linked List Intersection",
+                "Remove Nth Node from End"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Reverse linked list.",
+                    "Find middle of linked list.",
+                    "Detect cycle in linked list.",
+                    "Merge two sorted lists.",
+                    "Remove duplicates from sorted list."
+                ],
+                medium: [
+                    "Add two numbers represented by linked lists.",
+                    "Reorder linked list.",
+                    "Remove Nth node from end.",
+                    "Intersection of two linked lists.",
+                    "Palindrome linked list.",
+                    "Flatten multilevel linked list."
+                ],
+                hard: [
+                    "Reverse nodes in k-group.",
+                    "Merge k sorted lists.",
+                    "Copy list with random pointer.",
+                    "LRU cache implementation.",
+                    "Reverse linked list II (m to n).",
+                    "Linked list cycle II (find start).",
+                    "Design skiplist."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Stacks & Queues",
+            subtopics: [
+                "Stack Implementation",
+                "Queue Implementation",
+                "Monotonic Stack",
+                "Monotonic Queue",
+                "Deque (Double-ended Queue)",
+                "Priority Queue (Heap)",
+                "Stack Using Queues",
+                "Queue Using Stacks",
+                "Min Stack",
+                "Next Greater Element"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Implement stack using array.",
+                    "Implement queue using stack.",
+                    "Valid parentheses.",
+                    "Min stack.",
+                    "Implement queue using array."
+                ],
+                medium: [
+                    "Daily temperatures (monotonic stack).",
+                    "Next greater element.",
+                    "Largest rectangle in histogram.",
+                    "Evaluate reverse Polish notation.",
+                    "Decode string.",
+                    "Sliding window maximum."
+                ],
+                hard: [
+                    "Maximal rectangle.",
+                    "Basic calculator II.",
+                    "Longest valid parentheses.",
+                    "Remove duplicate letters.",
+                    "Max chunks to make sorted.",
+                    "Design max frequency stack.",
+                    "Design circular deque."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Trees & BST",
+            subtopics: [
+                "Binary Tree Basics",
+                "Tree Traversals (Inorder/Preorder/Postorder)",
+                "Level Order Traversal (BFS)",
+                "Binary Search Tree",
+                "BST Operations (Insert/Delete/Search)",
+                "Balanced Trees (AVL, Red-Black)",
+                "Lowest Common Ancestor",
+                "Tree Diameter",
+                "Path Sum Problems",
+                "Serialize/Deserialize Tree"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Max depth of binary tree.",
+                    "Invert binary tree.",
+                    "Same tree check.",
+                    "Symmetric tree check.",
+                    "Path sum."
+                ],
+                medium: [
+                    "Validate BST.",
+                    "Lowest common ancestor in BST.",
+                    "Kth smallest element in BST.",
+                    "Binary tree right side view.",
+                    "Construct tree from preorder & inorder.",
+                    "Flatten binary tree to linked list."
+                ],
+                hard: [
+                    "Serialize/deserialize binary tree.",
+                    "Binary tree maximum path sum.",
+                    "Recover BST.",
+                    "Count complete tree nodes.",
+                    "Vertical order traversal.",
+                    "All nodes distance K.",
+                    "Binary tree cameras."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Graphs",
+            subtopics: [
+                "Graph Representation (Adjacency List/Matrix)",
+                "DFS (Depth-First Search)",
+                "BFS (Breadth-First Search)",
+                "Topological Sort",
+                "Dijkstra's Algorithm",
+                "Bellman-Ford Algorithm",
+                "Floyd-Warshall Algorithm",
+                "Minimum Spanning Tree (Kruskal/Prim)",
+                "Union Find (Disjoint Set)",
+                "Cycle Detection",
+                "Strongly Connected Components"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Number of islands (DFS/BFS).",
+                    "Clone graph.",
+                    "Is graph bipartite?",
+                    "Find if path exists.",
+                    "Flood fill."
+                ],
+                medium: [
+                    "Course schedule (topological sort).",
+                    "Number of connected components.",
+                    "Word ladder.",
+                    "Shortest path in binary matrix.",
+                    "Network delay time (Dijkstra).",
+                    "Redundant connection (union find)."
+                ],
+                hard: [
+                    "Word ladder II.",
+                    "Alien dictionary (topological sort).",
+                    "Critical connections in network.",
+                    "Minimum cost to connect all points.",
+                    "Cheapest flights within K stops.",
+                    "Reconstruct itinerary.",
+                    "Swim in rising water."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Dynamic Programming",
+            subtopics: [
+                "DP Fundamentals",
+                "Memoization vs Tabulation",
+                "1D DP Problems",
+                "2D DP Problems",
+                "Knapsack Problems",
+                "Longest Common Subsequence",
+                "Longest Increasing Subsequence",
+                "Edit Distance",
+                "Matrix Chain Multiplication",
+                "DP on Trees",
+                "DP on Graphs",
+                "Digit DP"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Climbing stairs.",
+                    "House robber.",
+                    "Maximum subarray (Kadane's).",
+                    "Best time to buy/sell stock.",
+                    "Min cost climbing stairs."
+                ],
+                medium: [
+                    "Longest increasing subsequence.",
+                    "Coin change.",
+                    "Unique paths.",
+                    "Longest common subsequence.",
+                    "Word break.",
+                    "Decode ways."
+                ],
+                hard: [
+                    "Edit distance.",
+                    "Longest palindromic subsequence.",
+                    "Regular expression matching.",
+                    "Wildcard matching.",
+                    "Burst balloons.",
+                    "Dungeon game.",
+                    "Interleaving string."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Backtracking & Recursion",
+            subtopics: [
+                "Recursion Basics",
+                "Backtracking Template",
+                "Subsets & Combinations",
+                "Permutations",
+                "N-Queens Problem",
+                "Sudoku Solver",
+                "Word Search",
+                "Generate Parentheses",
+                "Partition Problems",
+                "Pruning Techniques"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Generate parentheses.",
+                    "Subsets.",
+                    "Combinations.",
+                    "Letter combinations of phone number.",
+                    "Permutations."
+                ],
+                medium: [
+                    "Word search.",
+                    "Combination sum.",
+                    "Palindrome partitioning.",
+                    "Restore IP addresses.",
+                    "Permutations II.",
+                    "Subsets II."
+                ],
+                hard: [
+                    "N-Queens.",
+                    "Sudoku solver.",
+                    "Word search II.",
+                    "Expression add operators.",
+                    "Remove invalid parentheses.",
+                    "Longest increasing path in matrix.",
+                    "Regular expression matching (backtracking)."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        },
+        {
+            name: "Advanced Data Structures",
+            subtopics: [
+                "Trie (Prefix Tree)",
+                "Segment Tree",
+                "Fenwick Tree (BIT)",
+                "Disjoint Set Union (Union-Find)",
+                "LRU Cache",
+                "LFU Cache",
+                "Design HashMap",
+                "Design Twitter",
+                "Min Heap / Max Heap",
+                "K-way Merge"
+            ],
+            interviewQuestions: {
+                easy: [
+                    "Implement trie.",
+                    "Design hashmap.",
+                    "Min heap operations.",
+                    "Union find basics.",
+                    "Design stack with min."
+                ],
+                medium: [
+                    "LRU cache.",
+                    "Add and search word (trie).",
+                    "Design hit counter.",
+                    "Range sum query (segment tree).",
+                    "Top K frequent elements.",
+                    "Find median from data stream."
+                ],
+                hard: [
+                    "LFU cache.",
+                    "Design Twitter.",
+                    "Skyline problem.",
+                    "Range sum query 2D (Fenwick tree).",
+                    "Word search II (trie).",
+                    "Design search autocomplete.",
+                    "Implement max frequency stack."
+                ]
+            },
+            aiFirst: false,
+            inScope: true,
+            status: "todo",
+            notes: ""
+        }
+    ]
+};
+
+// State management
+let currentSubject = null;
+let currentFilter = 'all';
+
+// Initialize app on load
+document.addEventListener('DOMContentLoaded', () => {
+    loadDataFromStorage();
+    renderNavigation();
+    updateGlobalProgress();
+});
+
+// Save state to localStorage
+function saveToStorage() {
+    try {
+        localStorage.setItem('interviewPrepData', JSON.stringify(studyData));
+        console.log('Data saved to localStorage');
+    } catch (e) {
+        console.error('Error saving to localStorage:', e);
+    }
+}
+
+// Load state from localStorage
+function loadDataFromStorage() {
+    try {
+        const stored = localStorage.getItem('interviewPrepData');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            // Merge stored data with default data
+            Object.keys(parsed).forEach(key => {
+                if (studyData[key]) {
+                    studyData[key] = parsed[key];
+                }
+            });
+            console.log('Data loaded from localStorage');
+        }
+    } catch (e) {
+        console.error('Error loading from localStorage:', e);
+    }
+}
+
+// Render navigation sidebar
+function renderNavigation() {
+    const navSection = document.getElementById('navSection');
+    navSection.innerHTML = '';
+    
+    Object.entries(studyData).forEach(([key, subject]) => {
+        const progress = calculateSubjectProgress(subject);
+        const navItem = document.createElement('div');
+        navItem.className = 'nav-item';
+        navItem.onclick = () => selectSubject(key);
+        
+        navItem.innerHTML = `
+            <div class="nav-item-title">${subject.name}</div>
+            <div class="nav-item-progress">${progress}%</div>
+        `;
+        
+        navSection.appendChild(navItem);
+    });
+}
+
+// Calculate progress for a subject
+function calculateSubjectProgress(subject) {
+    let total = 0;
+    let completed = 0;
+    
+    subject.topics.forEach(topic => {
+        if (topic.inScope !== false) {
+            total++;
+            if (topic.status === 'done') completed++;
+        }
+        
+        topic.subtopics.forEach(subtopic => {
+            if (typeof subtopic === 'string') {
+                total++;
+            }
+        });
+    });
+    
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
+}
+
+// Calculate global progress
+function updateGlobalProgress() {
+    let totalTopics = 0;
+    let completedTopics = 0;
+    
+    Object.values(studyData).forEach(subject => {
+        subject.topics.forEach(topic => {
+            if (topic.inScope !== false) {
+                totalTopics++;
+                if (topic.status === 'done') completedTopics++;
+            }
+        });
+    });
+    
+    const progress = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+    document.getElementById('globalProgress').textContent = progress + '%';
+}
+
+// Select a subject
+function selectSubject(key) {
+    currentSubject = key;
+    
+    // Update active nav item
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    // Update content
+    document.getElementById('contentTitle').textContent = studyData[key].name;
+    renderTopics();
+}
+
+// Render topics for selected subject
+function renderTopics() {
+    const contentBody = document.getElementById('contentBody');
+    const subject = studyData[currentSubject];
+    
+    const scopeTopics = subject.topics.filter(t => t.inScope !== false);
+    const nonScopeTopics = subject.topics.filter(t => t.inScope === false);
+    
+    let html = '';
+    
+    // In-scope topics
+    scopeTopics.forEach((topic, index) => {
+        html += renderTopicCard(topic, index, false);
+    });
+    
+    // Non-required section
+    if (nonScopeTopics.length > 0) {
+        html += '<div class="section-title">📦 Non-Required Topics (Moved Out)</div>';
+        nonScopeTopics.forEach((topic, index) => {
+            html += renderTopicCard(topic, scopeTopics.length + index, true);
+        });
+    }
+    
+    contentBody.innerHTML = html || '<div class="empty-state">No topics available</div>';
+}
+
+// Render individual topic card
+function renderTopicCard(topic, index, isNonRequired) {
+    const shouldHide = currentFilter !== 'all' && topic.status !== currentFilter;
+    const aiFirstBadge = topic.aiFirst ? '<span class="topic-badge badge-ai-first">AI-FIRST</span>' : '';
+    
+    return `
+        <div class="topic-card ${shouldHide ? 'hidden' : ''}" data-index="${index}">
+            <div class="topic-header" onclick="toggleTopic(${index})">
+                <div class="topic-title-section">
+                    <span class="expand-icon" id="expand-${index}">▶</span>
+                    <span class="topic-title">${topic.name}</span>
+                    ${aiFirstBadge}
+                </div>
+                <div class="topic-controls">
+                    <div class="status-indicator ${topic.status}" onclick="event.stopPropagation(); cycleStatus(${index})" title="${topic.status}"></div>
+                    <button class="move-btn" onclick="event.stopPropagation(); moveToNonRequired(${index})">${isNonRequired ? '↩ Move to Scope' : '📦 Move Out'}</button>
+                </div>
+            </div>
+            <div class="topic-content" id="content-${index}">
+                <div class="subtopic-list">
+                    ${topic.subtopics.map((sub, subIdx) => {
+                        const subName = typeof sub === 'string' ? sub : sub.name;
+                        return `
+                            <div class="subtopic-item">
+                                <div class="subtopic-header">
+                                    <span class="subtopic-name">${subName}</span>
+                                </div>
+                                <div class="notes-section">
+                                    <label class="notes-label">✍ Notes (supports \`code\` with backticks):</label>
+                                    <textarea class="notes-textarea" placeholder="Add your notes, code snippets, or key learnings here..." oninput="saveSubtopicNotes(${index}, ${subIdx}, this.value)">${typeof sub === 'object' ? (sub.notes || '') : ''}</textarea>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                ${renderInterviewQuestions(topic)}
+            </div>
+        </div>
+    `;
+}
+
+// Render interview questions
+function renderInterviewQuestions(topic) {
+    if (!topic.interviewQuestions) return '';
+    
+    return `
+        <div class="interview-section">
+            <div class="interview-title">💼 Interview Questions</div>
+            
+            <div class="interview-difficulty">
+                <span class="difficulty-label">🟢 Easy (3 YOE):</span>
+                <ul class="interview-questions">
+                    ${topic.interviewQuestions.easy.map(q => `<li>${q}</li>`).join('')}
+                </ul>
+            </div>
+            
+            <div class="interview-difficulty">
+                <span class="difficulty-label">🟡 Medium (5 YOE):</span>
+                <ul class="interview-questions">
+                    ${topic.interviewQuestions.medium.map(q => `<li>${q}</li>`).join('')}
+                </ul>
+            </div>
+            
+            <div class="interview-difficulty">
+                <span class="difficulty-label">🔴 Hard (8 YOE):</span>
+                <ul class="interview-questions">
+                    ${topic.interviewQuestions.hard.map(q => `<li>${q}</li>`).join('')}
+                </ul>
+            </div>
+        </div>
+    `;
+}
+
+// Toggle topic expansion
+function toggleTopic(index) {
+    const content = document.getElementById(`content-${index}`);
+    const icon = document.getElementById(`expand-${index}`);
+    
+    if (content.classList.contains('visible')) {
+        content.classList.remove('visible');
+        icon.classList.remove('expanded');
+    } else {
+        content.classList.add('visible');
+        icon.classList.add('expanded');
+    }
+}
+
+// Cycle through status states
+function cycleStatus(index) {
+    const subject = studyData[currentSubject];
+    const topic = subject.topics[index];
+    
+    const states = ['todo', 'in-progress', 'done'];
+    const currentIndex = states.indexOf(topic.status);
+    const nextIndex = (currentIndex + 1) % states.length;
+    
+    topic.status = states[nextIndex];
+    saveToStorage();
+    updateGlobalProgress();
+    renderTopics();
+    renderNavigation();
+}
+
+// Move topic to/from non-required pool
+function moveToNonRequired(index) {
+    const subject = studyData[currentSubject];
+    const topic = subject.topics[index];
+    
+    topic.inScope = !topic.inScope;
+    saveToStorage();
+    updateGlobalProgress();
+    renderTopics();
+    renderNavigation();
+}
+
+// Save subtopic notes
+function saveSubtopicNotes(topicIndex, subtopicIndex, notes) {
+    const subject = studyData[currentSubject];
+    const topic = subject.topics[topicIndex];
+    const subtopic = topic.subtopics[subtopicIndex];
+    
+    if (typeof subtopic === 'string') {
+        topic.subtopics[subtopicIndex] = { name: subtopic, notes: notes };
+    } else {
+        subtopic.notes = notes;
+    }
+    
+    saveToStorage();
+}
+
+// Set filter
+function setFilter(filter) {
+    currentFilter = filter;
+    
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+    });
+    
+    if (currentSubject) {
+        renderTopics();
+    }
+}
+
+// Export data as JSON
+function exportData() {
+    const dataStr = JSON.stringify(studyData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `interview-prep-backup-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+// Import data from JSON
+function importData() {
+    document.getElementById('importModal').classList.add('visible');
+}
+
+function closeModal() {
+    document.getElementById('importModal').classList.remove('visible');
+}
+
+function confirmImport() {
+    const fileInput = document.getElementById('importFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select a file');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const imported = JSON.parse(e.target.result);
+            Object.keys(imported).forEach(key => {
+                if (studyData[key]) {
+                    studyData[key] = imported[key];
+                }
+            });
+            saveToStorage();
+            renderNavigation();
+            updateGlobalProgress();
+            if (currentSubject) {
+                renderTopics();
+            }
+            closeModal();
+            alert('Data imported successfully!');
+        } catch (err) {
+            alert('Error importing file: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+}
+
+// Export notes to PDF
+function exportNotesToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let yPos = 20;
+    const lineHeight = 7;
+    const pageHeight = doc.internal.pageSize.height;
+    
+    doc.setFontSize(16);
+    doc.text('Interview Prep Notes', 20, yPos);
+    yPos += 15;
+    
+    Object.values(studyData).forEach(subject => {
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text(subject.name, 20, yPos);
+        yPos += 10;
+        
+        subject.topics.forEach(topic => {
+            if (topic.inScope === false) return;
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text(`  ${topic.name}`, 20, yPos);
+            yPos += 8;
+            
+            topic.subtopics.forEach(subtopic => {
+                const sub = typeof subtopic === 'object' ? subtopic : { name: subtopic, notes: '' };
+                if (sub.notes && sub.notes.trim()) {
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(`    - ${sub.name}`, 20, yPos);
+                    yPos += 6;
+                    
+                    const lines = doc.splitTextToSize(`      ${sub.notes}`, 170);
+                    lines.forEach(line => {
+                        if (yPos > pageHeight - 20) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                        doc.text(line, 20, yPos);
+                        yPos += lineHeight;
+                    });
+                    yPos += 3;
+                }
+            });
+            
+            yPos += 5;
+            if (yPos > pageHeight - 30) {
+                doc.addPage();
+                yPos = 20;
+            }
+        });
+        
+        yPos += 10;
+        if (yPos > pageHeight - 30) {
+            doc.addPage();
+            yPos = 20;
+        }
+    });
+    
+    doc.save(`interview-prep-notes-${new Date().toISOString().split('T')[0]}.pdf`);
+}
+</script>
+</body>
+</html>
